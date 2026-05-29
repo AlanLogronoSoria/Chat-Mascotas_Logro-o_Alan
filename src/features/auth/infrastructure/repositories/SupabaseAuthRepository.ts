@@ -25,6 +25,21 @@ export class SupabaseAuthRepository implements IAuthRepository {
     };
   }
 
+  async loginWithGoogle(): Promise<void> {
+    const { data, error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: 'petadopt://',
+        queryParams: {
+          access_type: 'offline',
+          prompt: 'consent',
+        },
+      },
+    });
+
+    if (error) throw error;
+  }
+
   async register(
     email: string,
     password: string,
@@ -80,5 +95,12 @@ export class SupabaseAuthRepository implements IAuthRepository {
       avatarUrl: profile?.avatar_url ?? undefined,
       role: user.user_metadata?.role ?? 'cliente',
     };
+  }
+
+  async resetPassword(email: string): Promise<void> {
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: 'petadopt://reset-password',
+    });
+    if (error) throw error;
   }
 }

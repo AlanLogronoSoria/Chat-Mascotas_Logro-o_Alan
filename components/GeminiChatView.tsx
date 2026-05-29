@@ -6,7 +6,6 @@ import {
   TextInput,
   TouchableOpacity,
   FlatList,
-  ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
@@ -15,6 +14,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { ArrowUp, Sparkles } from 'lucide-react-native';
 import { colors } from '../src/shared/design/theme';
 import { GeminiService } from '../src/shared/infrastructure/ai/GeminiService';
+import LottieView from 'lottie-react-native';
 
 interface Message {
   id: string;
@@ -132,7 +132,7 @@ export default function GeminiChatView() {
   return (
     <KeyboardAvoidingView
       style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
     >
       {/* Messages list */}
@@ -146,15 +146,12 @@ export default function GeminiChatView() {
         ListFooterComponent={
           loading ? (
             <View style={styles.loadingBubbleRow}>
-              <LinearGradient
-                colors={[colors.secondary, '#6A0DAD']}
-                style={styles.aiAvatar}
-              >
-                <Sparkles size={14} color="#fff" />
-              </LinearGradient>
-              <BlurView intensity={30} tint="light" style={[styles.bubble, styles.bubbleAi, styles.loadingBubble]}>
-                <ActivityIndicator size="small" color={colors.secondary} />
-              </BlurView>
+              <LottieView
+                source={require('../src/assets/lottie/geminiAnimation.json')}
+                autoPlay
+                loop
+                style={styles.geminiLoadingLottie}
+              />
             </View>
           ) : null
         }
@@ -184,7 +181,7 @@ export default function GeminiChatView() {
       )}
 
       {/* Input container */}
-      <BlurView intensity={45} tint="dark" style={styles.inputArea}>
+      <BlurView intensity={45} tint="dark" style={[styles.inputArea, { marginBottom: 60 }]}>
         <TextInput
           style={styles.input}
           placeholder="Pregúntale a PetGemini AI..."
@@ -293,6 +290,11 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  geminiLoadingLottie: {
+    width: 140,
+    height: 60,
+    alignSelf: 'flex-start',
   },
   suggestionsContainer: {
     paddingVertical: 10,

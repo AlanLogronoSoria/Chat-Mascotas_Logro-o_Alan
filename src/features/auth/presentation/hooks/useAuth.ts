@@ -4,8 +4,8 @@ import { LoginUseCase } from "../../application/use-cases/LoginUseCase";
 import { RegisterUseCase } from "../../application/use-cases/RegisterUseCase";
 import { SupabaseAuthRepository } from "../../infrastructure/repositories/SupabaseAuthRepository";
 import { useAuthStore } from "../store/authStore";
+import { useState } from "react";
 
-// 👈 Se añade el tipo exacto para el role
 type RegisterDto = { 
   email: string; 
   password: string; 
@@ -20,8 +20,8 @@ const registerUseCase = new RegisterUseCase(authRepo);
 export function useAuth() {
   const { user, setUser } = useAuthStore();
   const router = useRouter();
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
 
-  // useMutation de TanStack Query maneja isLoading y error automáticamente
   const loginMutation = useMutation({
     mutationFn: ({ email, password }: { email: string; password: string }) =>
       loginUseCase.execute(email, password),
@@ -32,7 +32,6 @@ export function useAuth() {
   });
 
   const registerMutation = useMutation({
-    // 👈 Se desestructura el role y se envía a execute()
     mutationFn: ({ email, password, username, role }: RegisterDto) =>
       registerUseCase.execute(email, password, username, role),
     onSuccess: (user) => {
@@ -40,6 +39,24 @@ export function useAuth() {
       router.replace("/(app)");
     },
   });
+
+  const resetPasswordMutation = useMutation({
+    mutationFn: (email: string) => authRepo.resetPassword(email),
+    onError: (error: any) => {
+      console.error('Error al enviar reset de contraseña:', error?.message || error);
+    }
+  });
+
+  const loginWithGoogle = async () => {
+    setIsGoogleLoading(true);
+    try {
+      await authRepo.loginWithGoogle();
+    } catch (e: any) {
+      console.error('Error al iniciar sesión con Google:', e?.message || e);
+    } finally {
+      setIsGoogleLoading(false);
+    }
+  };
 
   const logout = async () => {
     try {
@@ -54,9 +71,14 @@ export function useAuth() {
     user,
     login: loginMutation.mutate,
     register: registerMutation.mutate,
+    loginWithGoogle,
+    isGoogleLoading,
+    resetPassword: resetPasswordMutation.mutate,
+    isResettingPassword: resetPasswordMutation.isPending,
+    resetPasswordSuccess: resetPasswordMutation.isSuccess,
     logout,
     isLoading: loginMutation.isPending || registerMutation.isPending,
     error:
-      loginMutation.error?.message ?? registerMutation.error?.message ?? null,
+      loginMutation.error?.message ?? registerMutation.error?.message ?? resetPasswordMutation.error?.message ?? null,
   };
 }

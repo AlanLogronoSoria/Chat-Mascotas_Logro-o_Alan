@@ -39,9 +39,22 @@ export class GeminiService {
       );
 
       const data = await response.json();
-      if (data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts[0]) {
-        return data.candidates[0].content.parts[0].text;
+
+      if (!response.ok) {
+        const apiError = data?.error?.message || `HTTP ${response.status}`;
+        throw new Error(`Gemini API: ${apiError}`);
       }
+
+      const candidate = data?.candidates?.[0];
+      const text = candidate?.content?.parts?.[0]?.text;
+      if (text) {
+        return text;
+      }
+
+      if (candidate?.finishReason && candidate.finishReason !== 'STOP') {
+        throw new Error(`Gemini bloqueó la respuesta: ${candidate.finishReason}`);
+      }
+
       throw new Error("Formato de respuesta inválido de Gemini API");
     } catch (e: any) {
       console.error("Error llamando a la API de Gemini, cayendo en Simulador:", e.message || e);

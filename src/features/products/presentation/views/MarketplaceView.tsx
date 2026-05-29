@@ -221,8 +221,9 @@ export function MarketplaceView() {
           behavior={
             Platform.OS === "ios"
               ? "padding"
-              : undefined
+              : "height"
           }
+          keyboardVerticalOffset={Platform.OS === "ios" ? 90 : 0}
         >
           <FlatList
             data={products}

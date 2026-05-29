@@ -5,6 +5,7 @@ import { useProducts } from '../../../src/features/products/presentation/hooks/u
 import { useRooms } from '../../../src/features/chat/presentation/hooks/useRooms';
 import { AdoptionRepository } from '../../../src/features/applications/infrastructure/repositories/AdoptionRepository';
 import { useAuthStore } from '../../../src/features/auth/presentation/store/authStore';
+import { notifyShelterNewApplication } from '../../../src/shared/infrastructure/notifications/NotificationService';
 import { BlurView } from 'expo-blur';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Heart, ArrowLeft, ShieldAlert, Award, Calendar, Dog } from 'lucide-react-native';
@@ -66,8 +67,7 @@ export default function PetDetailScreen() {
     try {
       setRequesting(true);
 
-      // 1. Create adoption application record
-      await adoptionRepo.createApplication({
+      const app = await adoptionRepo.createApplication({
         petId: pet.id,
         petName: pet.name,
         petImage: image,
@@ -75,6 +75,13 @@ export default function PetDetailScreen() {
         adopterUsername: user.username || user.email,
         shelterId: pet.sellerId,
         details: 'Me interesa mucho adoptar a esta linda mascota. Prometo darle el mejor cuidado posible.',
+      });
+
+      notifyShelterNewApplication({
+        shelterId: pet.sellerId,
+        adopterName: user.username || user.email,
+        petName: pet.name,
+        applicationId: app.id,
       });
 
       // 2. Open chat room with the shelter

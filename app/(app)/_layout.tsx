@@ -1,9 +1,8 @@
 import { useAuth } from "@features/auth/presentation/hooks/useAuth";
 import { BlurView } from "expo-blur";
-import { LinearGradient } from "expo-linear-gradient";
 import { Stack } from "expo-router";
-import { ShieldCheck } from "lucide-react-native";
-import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import LottieView from 'lottie-react-native';
+import { StyleSheet, Text, View } from "react-native";
 
 // ==========================================
 // SKYCHAT "BEAUTIFUL RED" DESIGN SYSTEM
@@ -53,16 +52,19 @@ export default function AppLayout() {
 
           headerTitle: () => (
             <BlurView intensity={45} tint="dark" style={styles.chatHeader}>
+              
               <Text style={styles.chatTitle}>
                 {(route.params as any)?.roomId ? "Chat Directo" : "Chat"}
+
+                <LottieView
+                source={require('../../src/assets/lottie/chatRoomAnimation.json')}
+                autoPlay
+                loop
+                style={styles.chatLottie}
+              />
               </Text>
 
-              <View style={styles.statusRow}>
-                <ShieldCheck size={11} color={COLORS.success} />
-                <Text style={styles.chatSubtitle}>
-                  CONEXIÓN ENCRIPTADA
-                </Text>
-              </View>
+              
             </BlurView>
           ),
           
@@ -134,5 +136,11 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     color: COLORS.grayMid,
     letterSpacing: 2.4,
+  },
+  chatLottie: {
+    width: 100,
+    height: 50,
+    marginBottom: 2,
+    
   },
 });

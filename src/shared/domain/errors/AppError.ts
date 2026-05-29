@@ -20,3 +20,9 @@ export class ChatError extends AppError {
         super('CHAT_ERROR', message, cause);
     }
 }
+
+export class StorageError extends AppError {
+    constructor(message: string, cause?: unknown) {
+        super('STORAGE_ERROR', message, cause);
+    }
+}

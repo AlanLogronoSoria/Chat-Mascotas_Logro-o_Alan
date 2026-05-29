@@ -6,6 +6,7 @@ import { pickAndUploadImage } from "@shared/infrastructure/supabase/StorageServi
 import { BlurView } from "expo-blur";
 import { LinearGradient } from "expo-linear-gradient";
 import { useLocalSearchParams } from "expo-router";
+import LottieView from 'lottie-react-native';
 
 import { useCallback, useEffect, useRef, useState } from "react";
 
@@ -14,6 +15,8 @@ import {
   Alert,
   FlatList,
   Image,
+  KeyboardAvoidingView,
+  Platform,
   StatusBar,
   StyleSheet,
   Text,
@@ -186,24 +189,30 @@ export default function ChatScreen() {
         <View style={styles.glowTop} />
         <View style={styles.glowBottom} />
 
+        <KeyboardAvoidingView
+          style={{ flex: 1 }}
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
+          keyboardVerticalOffset={Platform.OS === "ios" ? 90 : 0}
+        >
         {/* Header */}
         <View style={styles.header}>
-          <View>
-            <Text style={styles.headerTitle}>
-              -
+          <View style={styles.statusRow}>
+            <ShieldCheck
+              size={14}
+              color="#22c55e"
+            />
+
+            <Text style={styles.statusText}>
+              Encrypted connection active
+              
             </Text>
-
-            <View style={styles.statusRow}>
-              <ShieldCheck
-                size={14}
-                color="#22c55e"
-              />
-
-              <Text style={styles.statusText}>
-                Encrypted connection active
-              </Text>
-            </View>
           </View>
+          <LottieView
+            source={require('../../../src/assets/lottie/chatRoomAnimation.json')}
+            autoPlay
+            loop
+            style={styles.headerLottie}
+          />
         </View>
 
         {/* Messages */}
@@ -273,6 +282,7 @@ export default function ChatScreen() {
             </LinearGradient>
           </TouchableOpacity>
         </BlurView>
+        </KeyboardAvoidingView>
       </LinearGradient>
     </>
   );
@@ -318,6 +328,13 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: "rgba(255,255,255,0.06)",
     backgroundColor: "rgba(15,23,42,0.7)",
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  headerLottie: {
+    width: 80,
+    height: 40,
   },
 
   headerTitle: {

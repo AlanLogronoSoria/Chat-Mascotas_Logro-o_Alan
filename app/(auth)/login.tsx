@@ -30,8 +30,10 @@ export default function LoginScreen() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [focusedField, setFocusedField] = useState<string | null>(null);
+  const [showResetForm, setShowResetForm] = useState(false);
+  const [resetEmail, setResetEmail] = useState("");
 
-  const { login, isLoading, error } = useAuth();
+  const { login, isLoading, error, loginWithGoogle, isGoogleLoading, resetPassword, isResettingPassword, resetPasswordSuccess } = useAuth();
 
   const handleLogin = () => {
     if (!email.trim() || !password.trim()) return;
@@ -43,8 +45,12 @@ export default function LoginScreen() {
   };
 
   const handleGoogleLogin = () => {
-    setEmail("adoptante@petadopt.com");
-    setPassword("password123");
+    loginWithGoogle();
+  };
+
+  const handleForgotPassword = () => {
+    if (!resetEmail.trim()) return;
+    resetPassword(resetEmail.trim());
   };
 
   const CardContainer =
@@ -251,28 +257,89 @@ export default function LoginScreen() {
                 </LinearGradient>
               </TouchableOpacity>
 
-              {/* DEMO */}
+              {/* GOOGLE LOGIN */}
               <TouchableOpacity
                 style={styles.btnGoogle}
                 onPress={handleGoogleLogin}
+                disabled={isGoogleLoading}
                 activeOpacity={0.85}
               >
                 <View style={styles.googleContent}>
-                  <Text
-                    style={styles.googleIconText}
-                  >
-                    G
-                  </Text>
-
-                  <Text
-                    style={styles.btnGoogleText}
-                  >
-                    Acceso rápido Demo
+                  {isGoogleLoading ? (
+                    <ActivityIndicator size="small" color={colors.secondary} />
+                  ) : (
+                    <Text style={styles.googleIconText}>G</Text>
+                  )}
+                  <Text style={styles.btnGoogleText}>
+                    {isGoogleLoading ? 'Conectando...' : 'Continuar con Google'}
                   </Text>
                 </View>
               </TouchableOpacity>
 
+              {/* FORGOT PASSWORD */}
+              {!showResetForm ? (
+                <TouchableOpacity
+                  style={styles.btnSecondary}
+                  onPress={() => { setResetEmail(email); setShowResetForm(true); }}
+                  activeOpacity={0.85}
+                >
+                  <Text style={styles.btnSecondaryText}>
+                    ¿Olvidaste tu contraseña?
+                  </Text>
+                </TouchableOpacity>
+              ) : (
+                <View style={styles.resetForm}>
+                  <Text style={styles.resetTitle}>Recuperar contraseña</Text>
+                  <Text style={styles.resetSubtitle}>
+                    Ingresa tu correo y te enviaremos un enlace para restablecerla.
+                  </Text>
+                  <TextInput
+                    style={[styles.inputReset]}
+                    placeholder="tu@email.com"
+                    placeholderTextColor="#64748b"
+                    value={resetEmail}
+                    onChangeText={setResetEmail}
+                    autoCapitalize="none"
+                    keyboardType="email-address"
+                  />
+                  {resetPasswordSuccess && (
+                    <View style={styles.successBox}>
+                      <Text style={styles.successText}>
+                        Revisa tu bandeja de entrada. Te hemos enviado un enlace para restablecer tu contraseña.
+                      </Text>
+                    </View>
+                  )}
+                  <TouchableOpacity
+                    style={[styles.btnPrimary, isResettingPassword && styles.btnDisabled]}
+                    onPress={handleForgotPassword}
+                    disabled={isResettingPassword || resetPasswordSuccess}
+                    activeOpacity={0.85}
+                  >
+                    <LinearGradient
+                      colors={[colors.secondary, "#6A0DAD"]}
+                      start={{ x: 0, y: 0 }}
+                      end={{ x: 1, y: 1 }}
+                      style={styles.btnGradient}
+                    >
+                      {isResettingPassword ? (
+                        <ActivityIndicator color="#fff" />
+                      ) : (
+                        <Text style={styles.btnPrimaryText}>Enviar enlace</Text>
+                      )}
+                    </LinearGradient>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={styles.btnSecondary}
+                    onPress={() => { setShowResetForm(false); setResetEmail(''); }}
+                    activeOpacity={0.85}
+                  >
+                    <Text style={styles.btnSecondaryText}>Volver al login</Text>
+                  </TouchableOpacity>
+                </View>
+              )}
+
               {/* REGISTER */}
+              {!showResetForm && (
               <Link
                 href="/(auth)/register"
                 asChild
@@ -288,6 +355,7 @@ export default function LoginScreen() {
                   </Text>
                 </TouchableOpacity>
               </Link>
+              )}
             </View>
           </CardContainer>
 
@@ -565,6 +633,44 @@ const styles = StyleSheet.create({
     color: "#cbd5e1",
     fontWeight: "600",
     fontSize: 14,
+  },
+
+  resetForm: {
+    gap: 12,
+    marginTop: 4,
+  },
+  resetTitle: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '800',
+  },
+  resetSubtitle: {
+    color: '#94a3b8',
+    fontSize: 13,
+    marginBottom: 4,
+  },
+  inputReset: {
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.08)',
+    backgroundColor: 'rgba(255, 255, 255, 0.03)',
+    borderRadius: 18,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    fontSize: 15,
+    color: '#fff',
+  },
+  successBox: {
+    backgroundColor: 'rgba(34, 197, 94, 0.12)',
+    borderRadius: 16,
+    padding: 14,
+    borderWidth: 1,
+    borderColor: 'rgba(34, 197, 94, 0.22)',
+  },
+  successText: {
+    color: '#4ade80',
+    fontSize: 13,
+    fontWeight: '500',
+    lineHeight: 20,
   },
 
   footerContainer: {
